@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 MAX_RETRIES = 3   # retries inside one Developer Agent run
 QA_AUTO_REPAIR_ROUNDS = max(0, min(3, int(os.getenv("QA_AUTO_REPAIR_ROUNDS", "2"))))
 
@@ -59,6 +59,7 @@ def _seconds(name: str, default: int) -> int:
 INSTALL_TIMEOUT_SECONDS = _seconds("INSTALL_TIMEOUT_SECONDS", 600)
 IMPORT_TIMEOUT_SECONDS = _seconds("IMPORT_TIMEOUT_SECONDS", 60)
 TEST_TIMEOUT_SECONDS = _seconds("TEST_TIMEOUT_SECONDS", 300)
+LLM_TIMEOUT_SECONDS = _seconds("LLM_TIMEOUT_SECONDS", 90)
 
 # Docker mode only: package downloads (pip / npm) are cached here and shared by install containers, so
 # the second install of a package does not download it again. Only install containers mount it.

@@ -90,6 +90,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload-dir app
 | `APP_TTL_SECONDS`, `APP_PUBLIC_HOST` | Preview lifetime, and the host used in the preview URL |
 | `WORKSPACES_DIR`, `JOBS_DIR` | Where projects and job records are stored |
 | `LLM_CALL_ATTEMPTS` | Tries per model call when the connection drops or the service is busy (default 3; 1 = no retry) |
+| `LLM_TIMEOUT_SECONDS` | Request timeout for model generation calls in seconds (default 90) |
 
 If `DEVELOPER_SERVICE_KEY` is empty the API is unauthenticated, so keep it bound to `127.0.0.1`.
 

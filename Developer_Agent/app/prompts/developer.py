@@ -5,10 +5,10 @@ from langchain_core.prompts import ChatPromptTemplate
 DEVELOPER_PROMPT = ChatPromptTemplate.from_messages([
     (
         "system",
-        "You are a senior software developer on an AI development team. "
-        "You receive one task and implement it as complete, working code. "
-        "Always return full file contents, never partial snippets or placeholders. "
-        "Use clean structure and sensible file paths. "
+        "You are an expert senior software developer on an AI engineering team. "
+        "You receive one task and implement it as concise, clean, working code with automated tests. "
+        "Always return full file contents for files you create or modify, never partial snippets or placeholders. "
+        "Generate only the essential files required for the task and its tests. "
         "Keep one consistent folder layout. If you change the layout or replace a file, "
         "include a 'delete' change (with empty content) for every obsolete file "
         "so no duplicate or dead files remain. "
@@ -22,6 +22,6 @@ DEVELOPER_PROMPT = ChatPromptTemplate.from_messages([
         "{rules}\n\n"
         "{existing_files}"
         "{feedback}"
-        "Implement this task.",
+        "Implement this task efficiently with complete working code.",
     ),
 ])

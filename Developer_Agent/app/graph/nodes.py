@@ -28,7 +28,9 @@ def generate_node(state: DeveloperState) -> dict:
     if state["validation_errors"]:
         error_text = "\n".join(state["validation_errors"])
         feedback = (
-            "Your previous attempt had these errors. Fix them:\n"
+            "TARGETED FIX REQUIRED: Your previous attempt had these errors. Fix them directly. "
+            "Return ONLY the specific file(s) that need changes or creation to fix these errors. "
+            "Do NOT regenerate or return files that are already working and unchanged:\n"
             f"{error_text}\n\n"
         )
 
