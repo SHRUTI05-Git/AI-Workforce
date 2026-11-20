@@ -1,7 +1,16 @@
 import { useEffect } from 'react'
 import { X } from 'lucide-react'
 
-function Modal({ isOpen, title, children, onClose, onSubmit, submitText = 'Create', submitting = false }) {
+function Modal({
+  isOpen,
+  title,
+  children,
+  onClose,
+  onSubmit,
+  submitText = 'Create',
+  submitting = false,
+  submitVariant = 'primary',
+}) {
   useEffect(() => {
     if (!isOpen) return undefined
     const onKey = (event) => { if (event.key === 'Escape') onClose() }
@@ -10,6 +19,11 @@ function Modal({ isOpen, title, children, onClose, onSubmit, submitText = 'Creat
   }, [isOpen, onClose])
 
   if (!isOpen) return null
+
+  const submitButtonClasses =
+    submitVariant === 'danger'
+      ? 'bg-red-600 hover:bg-red-700 active:bg-red-800 text-white px-4 py-2 rounded-lg font-medium transition-colors flex-1 disabled:opacity-50'
+      : 'btn-primary flex-1 disabled:opacity-50'
 
   return (
     <div className="bt-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={title}>
@@ -30,11 +44,11 @@ function Modal({ isOpen, title, children, onClose, onSubmit, submitText = 'Creat
         </div>
 
         <div className="flex shrink-0 gap-3 border-t border-border-light px-6 py-4">
-          <button onClick={onClose} className="btn-secondary flex-1">
+          <button onClick={onClose} disabled={submitting} className="btn-secondary flex-1">
             Cancel
           </button>
-          <button onClick={onSubmit} disabled={submitting} className="btn-primary flex-1">
-            {submitting ? 'Saving...' : submitText}
+          <button onClick={onSubmit} disabled={submitting} className={submitButtonClasses}>
+            {submitting ? (submitVariant === 'danger' ? 'Deleting...' : 'Saving...') : submitText}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Activity, ArrowLeft, ArrowRight, BookOpen, Bot, Calendar, CheckCircle, Code2, FileText, Folder, Layers, ListChecks, RefreshCw, ShieldCheck, User, Zap } from 'lucide-react'
+import { Activity, ArrowLeft, ArrowRight, BookOpen, Bot, Calendar, CheckCircle, Code2, FileText, Folder, Layers, ListChecks, RefreshCw, ShieldCheck, Trash2, User, Zap } from 'lucide-react'
+import Modal from '../components/common/Modal'
 import StatusBadge from '../components/common/StatusBadge'
 import ProgressBar from '../components/common/ProgressBar'
 import AnalysisResults from '../components/analysis/AnalysisResults'
@@ -59,6 +60,21 @@ function ProjectDetails() {
   const [data, setData] = useState({ project: null, analysis: null, plan: null, architecture: null, documents: [], runs: [], developerRuns: null, qaRuns: null })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+
+  const handleDeleteProject = async () => {
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      await apiService.projects.delete(id)
+      navigate('/projects')
+    } catch (err) {
+      setDeleteError(err.message)
+      setDeleting(false)
+    }
+  }
 
   const load = useCallback(async (isCancelled = () => false) => {
     setLoading(true)
@@ -140,6 +156,15 @@ function ProjectDetails() {
           </div>
           <div className="flex items-center gap-3">
             <button type="button" onClick={() => load()} disabled={loading} aria-label="Refresh project" className="btn-secondary flex items-center px-2.5 py-2"><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /></button>
+            <button
+              type="button"
+              onClick={() => setShowDeleteModal(true)}
+              aria-label="Delete project"
+              className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40"
+              title="Delete project"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
             <StatusBadge status={project.status} />
           </div>
         </div>
@@ -292,6 +317,30 @@ function ProjectDetails() {
           )}
         </div>
       </div>
+
+      <Modal
+        isOpen={showDeleteModal}
+        title="Delete Project"
+        onClose={() => { if (!deleting) setShowDeleteModal(false) }}
+        onSubmit={handleDeleteProject}
+        submitText="Delete Project"
+        submitting={deleting}
+        submitVariant="danger"
+      >
+        <div className="space-y-3">
+          {deleteError && (
+            <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {deleteError}
+            </p>
+          )}
+          <p className="text-text-primary">
+            Are you sure you want to delete <strong className="font-semibold text-text-primary">"{project?.name}"</strong>?
+          </p>
+          <p className="text-sm text-text-secondary">
+            This will permanently remove the project and all of its requirements, documents, architecture plans, tasks, and agent activity. This action cannot be undone.
+          </p>
+        </div>
+      </Modal>
     </div>
   )
 }

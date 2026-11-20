@@ -185,7 +185,10 @@ def test_workspace_can_be_downloaded_as_a_zip(client, project, fake):
 
     response = client.get(f"{BASE.format(project.id)}/workspace/download", headers=project.headers)
     assert response.status_code == 200 and response.headers["content-type"] == "application/zip"
-    assert zipfile.ZipFile(io.BytesIO(response.content)).namelist() == [f"project-{project.id}/app/main.py"]
+    names = zipfile.ZipFile(io.BytesIO(response.content)).namelist()
+    assert len(names) == 1
+    assert names[0].endswith("/app/main.py")
+    assert "Customer_Registration" in names[0]
 
 
 def test_commands_are_refused_while_the_agent_is_working(client, project, fake):

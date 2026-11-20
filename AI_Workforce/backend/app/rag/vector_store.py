@@ -85,3 +85,9 @@ class ProjectVectorStore:
             collection.delete(where={"document_id": str(document_id)})
         except Exception:
             logger.warning("Unable to remove Chroma records for document %s", document_id, exc_info=True)
+
+    def delete_project(self, project_id: int) -> None:
+        try:
+            self._client.delete_collection(name=f"project_{project_id}")
+        except Exception:
+            logger.warning("Unable to remove Chroma collection for project %s", project_id, exc_info=True)

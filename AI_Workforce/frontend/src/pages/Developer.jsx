@@ -396,7 +396,8 @@ function Developer() {
     setZipping(true)
     setError('')
     try {
-      await apiService.developer.downloadZip(projectId)
+      const currentProj = projects.find((p) => String(p.id) === String(projectId))
+      await apiService.developer.downloadZip(projectId, currentProj?.name)
     } catch (requestError) {
       setError(requestError.message)
     } finally {

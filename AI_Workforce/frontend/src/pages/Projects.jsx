@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Folder, Plus, RefreshCw, Search } from 'lucide-react'
+import { Folder, Plus, RefreshCw, Search, Trash2 } from 'lucide-react'
 import Modal from '../components/common/Modal'
 import StatusBadge from '../components/common/StatusBadge'
 import ProgressBar from '../components/common/ProgressBar'
@@ -14,6 +14,8 @@ function Projects() {
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [projectToDelete, setProjectToDelete] = useState(null)
+  const [deleting, setDeleting] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [error, setError] = useState('')
@@ -80,6 +82,21 @@ function Projects() {
     }
   }
 
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return
+    setDeleting(true)
+    try {
+      await apiService.projects.delete(projectToDelete.id)
+      setProjectList((prev) => prev.filter((p) => p.id !== projectToDelete.id))
+      setSuccess(`Project "${projectToDelete.name}" was deleted.`)
+      setProjectToDelete(null)
+    } catch (delError) {
+      setError(delError.message)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <div>
       <PageHeader
@@ -129,6 +146,7 @@ function Projects() {
                   <th className="px-6 py-3 text-left">Project Name</th><th className="px-6 py-3 text-left">Manager</th>
                   <th className="px-6 py-3 text-left">Progress</th><th className="px-6 py-3 text-left">Status</th>
                   <th className="px-6 py-3 text-left">Created On</th>
+                  <th className="px-6 py-3 text-right">Actions</th>
                 </tr></thead>
                 <tbody>
                   {filteredProjects.map((project) => (
@@ -138,6 +156,17 @@ function Projects() {
                       <td className="px-6 py-4"><div className="w-36"><ProgressBar progress={project.progress || 0} showLabel size="sm" /></div></td>
                       <td className="px-6 py-4"><StatusBadge status={project.status} /></td>
                       <td className="px-6 py-4 text-sm text-text-secondary">{project.created_at ? new Date(project.created_at).toLocaleDateString() : '—'}</td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => setProjectToDelete(project)}
+                          className="rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40"
+                          title="Delete project"
+                          aria-label={`Delete ${project.name}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -166,6 +195,25 @@ function Projects() {
             <div><label htmlFor="pdue" className="mb-1 block text-sm font-semibold text-text-primary">Due Date</label><input id="pdue" type="date" value={formData.dueDate} onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })} className="input-field w-full" /></div>
           </div>
           <div><label htmlFor="pstat" className="mb-1 block text-sm font-semibold text-text-primary">Status</label><select id="pstat" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="input-field w-full"><option>Planning</option><option>In Progress</option><option>Completed</option></select></div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(projectToDelete)}
+        title="Delete Project"
+        onClose={() => { if (!deleting) setProjectToDelete(null) }}
+        onSubmit={handleDeleteProject}
+        submitText="Delete Project"
+        submitting={deleting}
+        submitVariant="danger"
+      >
+        <div className="space-y-3">
+          <p className="text-text-primary">
+            Are you sure you want to delete <strong className="font-semibold text-text-primary">"{projectToDelete?.name}"</strong>?
+          </p>
+          <p className="text-sm text-text-secondary">
+            This will permanently remove the project and all of its requirements, documents, architecture plans, tasks, and agent activity. This action cannot be undone.
+          </p>
         </div>
       </Modal>
     </div>

@@ -7,6 +7,7 @@ an ``AgentRun`` so it appears next to the other agents' runs.
 """
 
 import io
+import re
 import zipfile
 from datetime import datetime, timezone
 
@@ -159,6 +160,12 @@ def read_workspace_file(
     return FileContentResponse(path=path, content=_call(client.read_file, workspace_id(project.id), path))
 
 
+def _safe_project_name(name: str, fallback_id: int) -> str:
+    cleaned = re.sub(r'[\\/*?:"<>|]', "", name).strip()
+    cleaned = re.sub(r"\s+", "_", cleaned)
+    return cleaned or f"project-{fallback_id}"
+
+
 @router.get("/workspace/download")
 def download_workspace(
     project_id: int,
@@ -168,6 +175,7 @@ def download_workspace(
 ):
     """Download the generated project as a ZIP file."""
     project = get_project_or_404(project_id, user, db)
+    folder_name = _safe_project_name(project.name, project.id)
     workspace = workspace_id(project.id)
     paths = [
         p for p in _call(client.list_files, workspace)
@@ -184,11 +192,11 @@ def download_workspace(
                 if exc.status_code == 503:
                     raise HTTPException(status_code=503, detail=exc.detail) from exc
                 continue   # a binary or unreadable file: leave it out of the ZIP
-            archive.writestr(f"project-{project.id}/{path}", content)
+            archive.writestr(f"{folder_name}/{path}", content)
     return Response(
         content=buffer.getvalue(),
         media_type="application/zip",
-        headers={"Content-Disposition": f'attachment; filename="project-{project.id}-code.zip"'},
+        headers={"Content-Disposition": f'attachment; filename="{folder_name}.zip"'},
     )
 
 

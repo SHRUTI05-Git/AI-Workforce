@@ -45,10 +45,20 @@ async function downloadCsv(path, filename) {
     try { detail = (await response.json()).detail } catch { /* not JSON */ }
     throw new Error(detail || `Export failed (${response.status})`)
   }
+
+  let downloadFilename = filename
+  const disposition = response.headers.get('Content-Disposition')
+  if (disposition) {
+    const match = disposition.match(/filename=["']?([^"';]+)["']?/i)
+    if (match && match[1]) {
+      downloadFilename = match[1].trim()
+    }
+  }
+
   const url = URL.createObjectURL(await response.blob())
   const link = document.createElement('a')
   link.href = url
-  link.download = filename
+  link.download = downloadFilename
   document.body.appendChild(link)
   link.click()
   link.remove()
@@ -90,6 +100,11 @@ export const apiService = {
       request('/projects', {
         method: 'POST',
         body: JSON.stringify(data),
+      }),
+
+    delete: (id) =>
+      request(`/projects/${id}`, {
+        method: 'DELETE',
       }),
   },
 
@@ -218,8 +233,10 @@ export const apiService = {
       downloadCsv(`/projects/${projectId}/developer/runs/export`, `developer-runs-project-${projectId}.csv`),
 
     // Downloads the generated project as a ZIP file.
-    downloadZip: (projectId) =>
-      downloadCsv(`/projects/${projectId}/developer/workspace/download`, `project-${projectId}-code.zip`),
+    downloadZip: (projectId, projectName) => {
+      const fallbackName = projectName ? `${projectName.trim().replace(/\s+/g, '_')}.zip` : `project-${projectId}-code.zip`
+      return downloadCsv(`/projects/${projectId}/developer/workspace/download`, fallbackName)
+    },
 
     runCommand: (projectId, command) =>
       request(`/projects/${projectId}/developer/commands`, {
